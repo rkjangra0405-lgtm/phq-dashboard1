@@ -1,0 +1,311 @@
+import Image from "next/image";
+import { parse } from "csv-parse/sync";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// Function to parse the specific date format in the CSV
+function parseDate(dateString: string): string {
+  if (!dateString || dateString.trim() === "") {
+    return "";
+  }
+  
+  // Handle format like: "Mon Apr 27 2026 00:00:00 GMT+0530 (India Standard Time)"
+  try {
+    // Extract the main date part before the timezone info
+    const mainPart = dateString.split(" GMT")[0];
+    const date = new Date(mainPart);
+    // Format as YYYY-MM-DD
+    return date.toISOString().split("T")[0];
+  } catch (error) {
+    console.warn(`Could not parse date: ${dateString}`, error);
+    return "";
+  }
+}
+
+export default async function Home() {
+  // Read and parse the complaints CSV
+  const complaintsData = parse(
+    readFileSync(join(process.cwd(), "data", "complaints-april-2026.csv")),
+    {
+      columns: true,
+      skip_empty_lines: true
+    }
+  );
+
+  // Calculate stats
+  const totalComplaints = complaintsData.length;
+  const pendingComplaints = complaintsData.filter(
+    (c: any) => c.statusGroup?.toLowerCase() === "pending" || 
+                c.statusOfComplaint?.toLowerCase() === "pending" ||
+                c.statusRaw?.toLowerCase() === "pending"
+  ).length;
+  const resolvedComplaints = complaintsData.filter(
+    (c: any) => c.statusGroup?.toLowerCase() === "resolved" || 
+                c.statusOfComplaint?.toLowerCase() === "resolved" ||
+                c.statusRaw?.toLowerCase() === "resolved"
+  ).length;
+
+  // Map first 10 rows for the table
+  const tableData = complaintsData.slice(0, 10).map((c: any) => ({
+    id: c.complRegNum || "N/A",
+    district: c.districtName || "Unknown",
+    status: 
+      c.statusGroup || 
+      c.statusOfComplaint || 
+      c.statusRaw || 
+      "Unknown",
+    date: parseDate(c.complRegDt),
+    category: c.incidentType || "Unknown",
+    complainant: `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Unknown"
+  }));
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 h-screen w-64 bg-white shadow-lg z-20">
+        <div className="flex flex-col h-full px-4 py-6">
+          <div className="flex items-center space-x-3 mb-8">
+            <Image
+              src="/next.svg"
+              alt="Police Headquarters Logo"
+              width={32}
+              height={32}
+              className="text-blue-600"
+            />
+            <h2 className="text-xl font-bold text-gray-800">
+              Police HQ
+            </h2>
+          </div>
+          
+          <nav className="flex-1 space-y-2">
+            <a
+              href="#"
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            >
+              Dashboard
+            </a>
+            <a
+              href="#"
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            >
+              Reports
+            </a>
+            <a
+              href="#"
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 bg-blue-50 text-blue-600"
+            >
+              Districts
+            </a>
+          </nav>
+          
+          <div className="mt-auto pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              Last updated: {new Date().toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="ml-64 min-h-screen">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Police Headquarters Complaint Dashboard
+              </h1>
+              <p className="mt-1 text-gray-600">
+                Real-time overview of complaint management
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Image
+                src="/vercel.svg"
+                alt="Verified"
+                width={24}
+                height={24}
+                className="text-green-500"
+              />
+              <span className="text-sm text-gray-600">System Online</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Stats Cards */}
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid gap-6 mb-8">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {/* Total Complaints */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
+                    <Image
+                      src="/next.svg"
+                      alt="Total Complaints"
+                      width={28}
+                      height={28}
+                    />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Total Complaints
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {totalComplaints.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">
+                  +12% from last month
+                </p>
+              </div>
+
+              {/* Pending Complaints */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0 bg-yellow-100 p-3 rounded-lg">
+                    <Image
+                      src="/vercel.svg"
+                      alt="Pending Complaints"
+                      width={28}
+                      height={28}
+                    />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Pending
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {pendingComplaints.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">
+                  -5% from last month
+                </p>
+              </div>
+
+              {/* Resolved Complaints */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0 bg-green-100 p-3 rounded-lg">
+                    <Image
+                      src="/vercel.svg"
+                      alt="Resolved Complaints"
+                      width={28}
+                      height={28}
+                    />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Resolved
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {resolvedComplaints.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">
+                  +8% from last month
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Complaints Table */}
+        <section className="max-w-7xl mx-auto px-4 pb-8">
+          <div className="bg-white rounded-lg shadow-lg">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
+                Recent Complaints
+                <span className="ml-auto px-3 py-1 px-4 text-xs font-medium bg-blue-50 rounded-full text-blue-800">
+                  Showing {tableData.length} of {totalComplaints}
+                </span>
+              </h2>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Complaint ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      District
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Complainant
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {tableData.map((complaint) => (
+                    <tr key={complaint.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {complaint.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {complaint.district}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            complaint.status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : complaint.status === "Resolved"
+                                ? "bg-green-100 text-green-800"
+                                : complaint.status === "Under Investigation"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {complaint.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {complaint.date}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">
+                        {complaint.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {complaint.complainant}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                        <button
+                          className="px-3 py-1 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                        >
+                          View
+                        </button>
+                        <button
+                          className="px-3 py-1 text-xs font-medium bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

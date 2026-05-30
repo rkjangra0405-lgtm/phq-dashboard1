@@ -1,0 +1,80 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model District {
+  id        Int     @id @default(autoincrement())
+  name      String
+  policeStations PoliceStation[] @relation("DistrictPoliceStations")
+  complaints Complaint[] @relation("DistrictComplaints")
+}
+
+model Office {
+  id        Int     @id @default(autoincrement())
+  name      String
+  complaints Complaint[] @relation("OfficeComplaints")
+}
+
+model PoliceStation {
+  id            Int     @id @default(autoincrement())
+  districtId    Int
+  districtName  String
+  name          String
+  district      District? @relation("DistrictPoliceStations", fields: [districtId], references: [id])
+  complaints    Complaint[] @relation("PoliceStationComplaints")
+}
+
+model Complaint {
+  id            Int     @id @default(autoincrement())
+  complRegNum   String
+  complRegDt    DateTime
+  districtName  String
+  districtMasterId Int
+  policestationmasterId Int
+  officemasterId Int
+  complDesc     String?
+  complSrno     Int?
+  firstName     String?
+  lastName      String?
+  mobile        String?
+  gender        String?
+  age           Int?
+  addressLine1  String?
+  addressLine2  String?
+  addressLine3  String?
+  village       String?
+  tehsil        String?
+  addressDistrict String?
+  addressPs     String?
+  receptionMode String?
+  incidentType  String?
+  incidentPlc   String?
+  incidentFromDt DateTime?
+  incidentToDt  DateTime?
+  submitPsCd    String?
+  submitOfficeCd String?
+  email         String?
+  statusRaw     String?
+  statusGroup   String?
+  statusOfComplaint String?
+  disposalDate  DateTime?
+  classOfIncident String?
+  complaintSource String?
+  typeofComplaint String?
+  crimeCategory   String?
+  complainantType String?
+  complaintPurpose String?
+  ioDetails       String?
+  respondentCategories String?
+  transferDistrictCd String?
+  transferOfficeCd   String?
+  transferPsCd       String?
+
+  district      District?   @relation("DistrictComplaints", fields: [districtMasterId], references: [id])
+  office        Office?     @relation("OfficeComplaints", fields: [officemasterId], references: [id])
+  policeStation PoliceStation? @relation("PoliceStationComplaints", fields: [policestationmasterId], references: [id])
+}
