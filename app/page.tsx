@@ -62,6 +62,14 @@ function CloseIcon() {
   );
 }
 
+function MenuIcon() {
+  return (
+    <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
 export default function Home() {
   // --- States ---
   const [complaintsData, setComplaintsData] = useState<any[]>([]);
@@ -69,6 +77,7 @@ export default function Home() {
   const [officesData, setOfficesData] = useState<any[]>([]);
   const [policeStationsData, setPoliceStationsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Geographic Select Filters
   const [selectedDistrictId, setSelectedDistrictId] = useState<string | null>(null);
@@ -761,34 +770,9 @@ export default function Home() {
     doc.save(`phq_complaint_report_${timestamp}.pdf`);
   };
 
-  // Radial Ring Circle Parameters
-  const ringRadius = 42;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset = ringCircumference - (resolutionRate / 100) * ringCircumference;
-
-  // --- Loading screen ---
-  if (loading) {
+  const renderSidebarContent = () => {
     return (
-      <div className="min-h-screen bg-[#04060f] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative inline-flex">
-            <div className="w-16 h-16 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-blue-500/10 rounded-full animate-ping"></div>
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold text-slate-300 tracking-wider">HARYANA POLICE</h3>
-          <p className="text-xs text-slate-500 tracking-widest animate-pulse">BOOTING DECISION ENGINE...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#060814] via-[#090d22] to-[#04060f] text-slate-100 font-sans flex overflow-hidden">
-      
-      {/* Sidebar Control Panel */}
-      <aside className="w-80 glass-panel border-r border-police-700/30 flex flex-col shrink-0 z-20 h-screen overflow-y-auto">
+      <>
         <div className="p-6 space-y-8 flex-1">
           
           {/* Main Logo Crest */}
@@ -862,7 +846,7 @@ export default function Home() {
             </h4>
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => { setStatusFilter(""); setCurrentPage(1); }}
+                onClick={() => { setStatusFilter(""); setCurrentPage(1); setMobileSidebarOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex justify-between items-center ${
                   statusFilter === "" 
                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/40 shadow-[inset_0_0_8px_rgba(59,130,246,0.15)] font-semibold" 
@@ -874,7 +858,7 @@ export default function Home() {
               </button>
               
               <button
-                onClick={() => { setStatusFilter("pending"); setCurrentPage(1); }}
+                onClick={() => { setStatusFilter("pending"); setCurrentPage(1); setMobileSidebarOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex justify-between items-center ${
                   statusFilter === "pending"
                     ? "bg-amber-600/20 text-amber-400 border border-amber-500/40 shadow-[inset_0_0_8px_rgba(245,158,11,0.15)] font-semibold" 
@@ -886,7 +870,7 @@ export default function Home() {
               </button>
 
               <button
-                onClick={() => { setStatusFilter("investigation"); setCurrentPage(1); }}
+                onClick={() => { setStatusFilter("investigation"); setCurrentPage(1); setMobileSidebarOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex justify-between items-center ${
                   statusFilter === "investigation"
                     ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 shadow-[inset_0_0_8px_rgba(99,102,241,0.15)] font-semibold" 
@@ -898,7 +882,7 @@ export default function Home() {
               </button>
 
               <button
-                onClick={() => { setStatusFilter("resolved"); setCurrentPage(1); }}
+                onClick={() => { setStatusFilter("resolved"); setCurrentPage(1); setMobileSidebarOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex justify-between items-center ${
                   statusFilter === "resolved"
                     ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 shadow-[inset_0_0_8px_rgba(16,185,129,0.15)] font-semibold" 
@@ -918,22 +902,89 @@ export default function Home() {
           <p>DB_TARGET: Neon.PostgreSQL</p>
           <p>UPDATED: {timeString || "LOADING..."}</p>
         </div>
+      </>
+    );
+  };
+
+  // Radial Ring Circle Parameters
+  const ringRadius = 42;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference - (resolutionRate / 100) * ringCircumference;
+
+  // --- Loading screen ---
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#04060f] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="relative inline-flex">
+            <div className="w-16 h-16 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-500/10 rounded-full animate-ping"></div>
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-300 tracking-wider">HARYANA POLICE</h3>
+          <p className="text-xs text-slate-500 tracking-widest animate-pulse">BOOTING DECISION ENGINE...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#060814] via-[#090d22] to-[#04060f] text-slate-100 font-sans flex flex-col lg:flex-row overflow-hidden relative">
+      
+      {/* Desktop Sidebar Control Panel */}
+      <aside className="w-80 glass-panel border-r border-police-700/30 flex-col shrink-0 z-20 h-screen overflow-y-auto hidden lg:flex">
+        {renderSidebarContent()}
       </aside>
+
+      {/* Mobile Drawer Sidebar Overlay */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          {/* Backdrop */}
+          <div 
+            onClick={() => setMobileSidebarOpen(false)}
+            className="absolute inset-0 bg-[#04060f]/60 backdrop-blur-sm animate-fade-in"
+          />
+          {/* Drawer content sliding in from left */}
+          <aside className="w-80 bg-[#070b1b] border-r border-police-700/35 h-full relative z-10 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-slide-in-left">
+            <div className="flex justify-end p-4 border-b border-police-700/30">
+              <button 
+                onClick={() => setMobileSidebarOpen(false)}
+                className="p-2 bg-police-950 rounded-lg hover:bg-police-800 border border-police-700/40 cursor-pointer transition-all"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto flex flex-col">
+              {renderSidebarContent()}
+            </div>
+          </aside>
+        </div>
+      )}
 
       {/* Main Command Center Body */}
       <main className="flex-1 flex flex-col h-screen overflow-y-auto z-10 relative">
         
         {/* Top Header Navigation Bar */}
-        <header className="glass-panel border-b border-police-700/20 shrink-0 px-8 py-5 flex items-center justify-between sticky top-0 bg-gradient-to-r from-[#060814]/90 to-[#0a0f26]/90 z-10">
-          <div>
-            <h1 className="text-xl font-black tracking-wide text-white uppercase flex items-center gap-2">
-              Complaint Operations Console
-              <span className="bg-red-950/80 text-red-500 border border-red-900/50 px-2 py-0.5 rounded text-[10px] tracking-widest font-bold animate-pulse">LIVE</span>
-            </h1>
-            <p className="text-xs text-slate-400">HARYANA POLICE STATEWIDE COMPLAINTS & INVESTIGATIONS DATABASE</p>
+        <header className="glass-panel border-b border-police-700/20 shrink-0 px-4 py-4 md:px-8 md:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 bg-gradient-to-r from-[#060814]/90 to-[#0a0f26]/90 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg bg-[#05070f] border border-police-700/40 text-slate-400 hover:text-white transition-all cursor-pointer"
+              title="Open Controls Menu"
+            >
+              <MenuIcon />
+            </button>
+            <div>
+              <h1 className="text-base md:text-xl font-black tracking-wide text-white uppercase flex items-center gap-2">
+                Complaint Operations Console
+                <span className="bg-red-950/80 text-red-500 border border-red-900/50 px-1.5 py-0.5 md:px-2 md:py-0.5 rounded text-[8px] md:text-[10px] tracking-widest font-bold animate-pulse">LIVE</span>
+              </h1>
+              <p className="text-[10px] md:text-xs text-slate-400">HARYANA POLICE STATEWIDE COMPLAINTS & INVESTIGATIONS DATABASE</p>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto">
             <input
               type="file"
               ref={fileInputRef}
@@ -943,19 +994,19 @@ export default function Home() {
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3.5 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-[0_0_10px_rgba(59,130,246,0.3)] cursor-pointer flex items-center gap-1.5 border border-blue-500"
+              className="px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-[0_0_10px_rgba(59,130,246,0.3)] cursor-pointer flex items-center gap-1.5 border border-blue-500"
             >
               <span>📥</span> Import Data
             </button>
             <button
               onClick={downloadSampleTemplate}
-              className="px-3.5 py-1.5 text-xs font-semibold bg-police-950 hover:bg-police-900 border border-police-700/40 text-slate-300 hover:text-white rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-semibold bg-police-950 hover:bg-police-900 border border-police-700/40 text-slate-300 hover:text-white rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
               title="Download CSV sample template for bulk import"
             >
-              <span>📄</span> Download Template
+              <span>📄</span> Template
             </button>
-
-            <div className="flex items-center space-x-2 bg-police-950 px-3 py-1.5 rounded-lg border border-police-700/40">
+ 
+            <div className="hidden sm:flex items-center space-x-2 bg-police-950 px-3 py-1.5 rounded-lg border border-police-700/40">
               <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
               <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full absolute"></span>
               <span className="text-[11px] text-slate-300 tracking-wider font-semibold">CON_SECURE: CONNECTED</span>
@@ -963,10 +1014,10 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="px-8 py-8 space-y-8 flex-1">
+        <div className="px-4 py-6 md:px-8 md:py-8 space-y-6 md:space-y-8 flex-1">
           
           {/* Analytical summary cards */}
-          <section className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             
             {/* Total complaints */}
             <div className="glass-panel glass-panel-hover rounded-xl p-5 relative overflow-hidden flex flex-col justify-between h-32 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
@@ -1074,7 +1125,7 @@ export default function Home() {
                 <span className="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 border border-emerald-900/50 rounded font-semibold">Disposal Index</span>
               </div>
 
-              <div className="flex items-center justify-around gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-around gap-6 w-full">
                 
                 {/* Circular glowing resolution progress */}
                 <div className="flex flex-col items-center space-y-2 shrink-0">
@@ -1110,7 +1161,7 @@ export default function Home() {
                 </div>
 
                 {/* Vertical lists for submission modes */}
-                <div className="flex-1 space-y-2.5 max-w-[200px]">
+                <div className="flex-1 space-y-2.5 w-full sm:max-w-[200px]">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block border-b border-police-700/20 pb-1 font-semibold">Ingress Source</span>
                   {submissionModeData.length === 0 ? (
                     <p className="text-[10px] text-slate-500">No source records available</p>
@@ -1156,10 +1207,10 @@ export default function Home() {
               </div>
 
               {/* Table search & selection filters */}
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full md:w-auto">
                 
                 {/* Search Bar */}
-                <div className="relative">
+                <div className="relative w-full sm:w-64">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <SearchIcon />
                   </div>
@@ -1168,7 +1219,7 @@ export default function Home() {
                     value={searchQuery}
                     onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                     placeholder="Search ID, Name, Mobile, Description..."
-                    className="pl-9 pr-4 py-2 w-64 bg-[#05070f] border border-police-700/50 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                    className="pl-9 pr-4 py-2 w-full bg-[#05070f] border border-police-700/50 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                   />
                 </div>
 
@@ -1176,7 +1227,7 @@ export default function Home() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
-                  className="bg-[#05070f] border border-police-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all cursor-pointer w-44"
+                  className="bg-[#05070f] border border-police-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all cursor-pointer w-full sm:w-44"
                 >
                   <option value="">[ All Incident Types ]</option>
                   {uniqueCategories.map(cat => (
@@ -1187,7 +1238,7 @@ export default function Home() {
                 {/* Export PDF Button */}
                 <button
                   onClick={exportPDF}
-                  className="bg-red-950/60 hover:bg-red-900/80 border border-red-800/60 hover:border-red-600/80 px-3.5 py-2 text-xs font-bold text-red-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.25)]"
+                  className="bg-red-950/60 hover:bg-red-900/80 border border-red-800/60 hover:border-red-600/80 px-3.5 py-2 text-xs font-bold text-red-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] w-full sm:w-auto"
                   title="Export up to 1000 filtered rows to PDF"
                 >
                   <span>📄</span> Export PDF
@@ -1209,23 +1260,23 @@ export default function Home() {
                       </div>
                     </th>
 
-                    <th onClick={() => toggleSort("date")} className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-police-950 transition-colors">
+                    <th onClick={() => toggleSort("date")} className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-police-950 transition-colors hidden sm:table-cell">
                       <div className="flex items-center space-x-1.5">
                         <span>Filing Date</span>
                         <SortIcon active={sortConfig?.key === "date"} direction={sortConfig?.direction || "desc"} />
                       </div>
                     </th>
 
-                    <th onClick={() => toggleSort("district")} className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-police-950 transition-colors">
+                    <th onClick={() => toggleSort("district")} className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-police-950 transition-colors hidden md:table-cell">
                       <div className="flex items-center space-x-1.5">
                         <span>Geographic District</span>
                         <SortIcon active={sortConfig?.key === "district"} direction={sortConfig?.direction || "desc"} />
                       </div>
                     </th>
 
-                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Office Master</th>
+                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest hidden lg:table-cell">Office Master</th>
                     
-                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Police Station</th>
+                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest hidden lg:table-cell">Police Station</th>
                     
                     <th onClick={() => toggleSort("status")} className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-police-950 transition-colors">
                       <div className="flex items-center space-x-1.5">
@@ -1234,7 +1285,7 @@ export default function Home() {
                       </div>
                     </th>
 
-                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Complainant</th>
+                    <th className="px-6 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-widest hidden md:table-cell">Complainant</th>
                     
                     <th className="px-6 py-4 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Action</th>
 
@@ -1258,10 +1309,10 @@ export default function Home() {
                         }`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-slate-100 font-bold tracking-wider">{complaint.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-300">{complaint.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-300">{complaint.district}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-400 truncate max-w-[150px]" title={complaint.office}>{complaint.office}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-400 truncate max-w-[150px]" title={complaint.policeStation}>{complaint.policeStation}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-300 hidden sm:table-cell">{complaint.date}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-300 hidden md:table-cell">{complaint.district}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-400 truncate max-w-[150px] hidden lg:table-cell" title={complaint.office}>{complaint.office}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-400 truncate max-w-[150px] hidden lg:table-cell" title={complaint.policeStation}>{complaint.policeStation}</td>
                         
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1274,7 +1325,7 @@ export default function Home() {
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-200">{complaint.complainant}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-200 hidden md:table-cell">{complaint.complainant}</td>
                         
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <button
@@ -1332,10 +1383,10 @@ export default function Home() {
           />
 
           {/* Drawer Body Container */}
-          <div className="w-[620px] bg-[#070b1b] border-l border-police-700/35 h-full relative z-10 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-slide-in">
+          <div className="w-full max-w-[620px] bg-[#070b1b] border-l border-police-700/35 h-full relative z-10 flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-slide-in">
             
             {/* Header banner */}
-            <div className="p-6 border-b border-police-700/30 bg-gradient-to-r from-police-950 to-police-900 flex items-center justify-between">
+            <div className="p-4 sm:p-6 border-b border-police-700/30 bg-gradient-to-r from-police-950 to-police-900 flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-blue-400 uppercase tracking-widest">Case Inquest Dossier</span>
                 <h3 className="text-md font-extrabold text-white tracking-wider flex items-center mt-1">
@@ -1362,10 +1413,10 @@ export default function Home() {
             </div>
 
             {/* Dossier Body Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               
               {/* Status Section */}
-              <div className="glass-panel rounded-xl p-4.5 space-y-3 bg-[#0d142a]/30">
+              <div className="glass-panel rounded-xl p-4 md:p-4.5 space-y-3 bg-[#0d142a]/30">
                 <div className="flex items-center justify-between border-b border-police-700/20 pb-2">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider">Investigative Status</span>
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1378,7 +1429,7 @@ export default function Home() {
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase">Registration Date</p>
                     <p className="text-slate-200 font-bold mt-0.5">{parseDate(selectedComplaint.complRegDt)}</p>
@@ -1399,8 +1450,8 @@ export default function Home() {
                   Complainant Identity
                 </h4>
                 
-                <div className="glass-panel rounded-xl p-4.5 grid grid-cols-2 gap-4 text-xs bg-[#0d142a]/30">
-                  <div className="col-span-2">
+                <div className="glass-panel rounded-xl p-4 md:p-4.5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-[#0d142a]/30">
+                  <div className="col-span-1 sm:col-span-2">
                     <p className="text-[10px] text-slate-500 uppercase">Complainant Full Name</p>
                     <p className="text-slate-200 font-bold text-sm mt-0.5">
                       {`${selectedComplaint.firstName || ""} ${selectedComplaint.lastName || ""}`.trim() || "N/A (ANONYMOUS/SECURITY REGISTRY)"}
@@ -1421,13 +1472,13 @@ export default function Home() {
                   </div>
 
                   {selectedComplaint.email && (
-                    <div className="col-span-2">
+                    <div className="col-span-1 sm:col-span-2">
                       <p className="text-[10px] text-slate-500 uppercase">Email Dispatch Link</p>
                       <p className="text-slate-200 font-bold mt-0.5">{selectedComplaint.email}</p>
                     </div>
                   )}
 
-                  <div className="col-span-2 border-t border-police-700/20 pt-3 space-y-2">
+                  <div className="col-span-1 sm:col-span-2 border-t border-police-700/20 pt-3 space-y-2">
                     <p className="text-[10px] text-slate-500 uppercase">Residential Address</p>
                     <p className="text-slate-300 font-medium leading-relaxed">
                       {[
@@ -1451,8 +1502,8 @@ export default function Home() {
                   Incident Case Details
                 </h4>
                 
-                <div className="glass-panel rounded-xl p-4.5 space-y-4 text-xs bg-[#0d142a]/30">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="glass-panel rounded-xl p-4 md:p-4.5 space-y-4 text-xs bg-[#0d142a]/30">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase">Incident Type / Classification</p>
                       <p className="text-blue-400 font-bold mt-0.5 uppercase">{selectedComplaint.incidentType || "Unknown Type"}</p>
@@ -1487,8 +1538,8 @@ export default function Home() {
                   HQ Operational Assignment
                 </h4>
                 
-                <div className="glass-panel rounded-xl p-4.5 grid grid-cols-2 gap-4 text-xs bg-[#0d142a]/30">
-                  <div className="col-span-2">
+                <div className="glass-panel rounded-xl p-4 md:p-4.5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-[#0d142a]/30">
+                  <div className="col-span-1 sm:col-span-2">
                     <p className="text-[10px] text-slate-500 uppercase">Investigating Officer (IO Details)</p>
                     <p className="text-slate-200 font-bold mt-1 text-[13px]">
                       {selectedComplaint.ioDetails || "No Investigating Officer assigned yet."}
